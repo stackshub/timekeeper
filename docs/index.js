@@ -3,13 +3,13 @@
 const C = A.getContext('2d');
 const W = 360;
 const H = 480;
-const messageLabel = { x: 130, y: 20, w: 100, h: 40, text: '' };
-const startLabel = { x: 15, y: 60, w: 100, h: 40, text: '' };
-const totalLabel = { x: 130, y: 60, w: 100, h: 40, text: '' };
-const stopLabel = { x: 245, y: 60, w: 100, h: 40, text: '' };
-const startButton = { x: 15, y: 370, w: 100, h: 100, text: '' };
-const playButton = { x: 130, y: 370, w: 100, h: 100, text: '' };
-const stopButton = { x: 245, y: 370, w: 100, h: 100, text: '' };
+const messageLabel = { x: 130, y: 15, w: 100, h: 45, text: '' };
+const startLabel = { x: 15, y: 60, w: 100, h: 45, text: '' };
+const totalLabel = { x: 130, y: 60, w: 100, h: 45, text: '' };
+const stopLabel = { x: 245, y: 60, w: 100, h: 45, text: '' };
+const startButton = { x: 15, y: 375, w: 100, h: 90, text: '' };
+const playButton = { x: 130, y: 375, w: 100, h: 90, text: '' };
+const stopButton = { x: 245, y: 375, w: 100, h: 90, text: '' };
 const trackY = 120;
 const trackH = 240;
 const startX = 65;
@@ -38,6 +38,7 @@ let goTime;
 let finishTime;
 let startTime;
 let stopTime;
+let bestScore = +localStorage.bestScore || 0;
 
 (() => {
   A.style.backgroundColor = '#6c6';
@@ -108,9 +109,9 @@ function withinRect(rect, x, y) {
 function doHome() {
   scene = Scenes.Home;
   messageLabel.text = document.title;
-  startLabel.text = '';
-  totalLabel.text = '';
-  stopLabel.text = '';
+  startLabel.text = 'Start-Go';
+  totalLabel.text = 'Total';
+  stopLabel.text = 'Stop-Finish';
   startButton.text = '';
   playButton.text = 'Play';
   stopButton.text = '';
@@ -165,7 +166,7 @@ function request() {
         }
       } else {
         scene = Scenes.Waiting;
-        messageLabel.text = 'Set';
+        messageLabel.text = 'Get set';
         animateTime = frameTime + 2000 + 500 * Math.random();
         for (const runner of runners) {
           runner.v = 0;
@@ -209,20 +210,28 @@ function request() {
         const startDiff = startTime - goTime;
         const stopDiff = stopTime - finishTime;
         const totalDiff = stopDiff - startDiff;
+        const score =
+          10000 -
+          100 * Math.abs(Math.round(totalDiff / 10)) -
+          Math.min(
+            Math.abs(Math.round(startDiff / 10)),
+            Math.abs(Math.round(stopDiff / 10))
+          );
         messageLabel.text =
           'Score: ' +
-          (10000 -
-            100 * Math.abs(Math.round(totalDiff / 10)) -
-            Math.min(
-              Math.abs(Math.round(startDiff / 10)),
-              Math.abs(Math.round(stopDiff / 10))
-            ));
+          score +
+          (score > bestScore ? ' >' : ' <=') +
+          ' Best: ' +
+          bestScore;
         startLabel.text = formatDiff(startDiff / 1000);
         totalLabel.text = formatDiff(totalDiff / 1000);
         stopLabel.text = formatDiff(stopDiff / 1000);
         startButton.text = '';
         playButton.text = 'Retry';
         stopButton.text = '';
+        if (score > bestScore) {
+          localStorage.bestScore = bestScore = score;
+        }
       }
     }
     render();
